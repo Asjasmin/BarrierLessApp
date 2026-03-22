@@ -1,0 +1,44 @@
+{
+  "name": "BarrierLess - Break Language Barriers",
+  "short_name": "BarrierLess",
+  "description": "AI translation: English, Bahasa Indonesia & Mandarin with Pinyin, Vocab & Learning",
+  "start_url": "/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#1565C0",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "utilities"],
+  "lang": "en",
+  "shortcuts": [
+    {
+      "name": "Chat",
+      "url": "/index.html#chat",
+      "description": "Open translation chat"
+    },
+    {
+      "name": "Vocab Library",
+      "url": "/index.html#vocab",
+      "description": "View saved vocabulary"
+    },
+    {
+      "name": "Learn",
+      "url": "/index.html#learn",
+      "description": "Practice & study"
+    }
+  ]
+}
