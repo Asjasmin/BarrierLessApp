@@ -567,21 +567,81 @@ async function startGrammar(){
 
     if(!K){c.innerHTML='<p style="text-align:center;color:var(--g500);padding:30px">🔑 Connect API key for AI grammar guide</p>'+lvls.map(l=>`<h3 style="font-size:14px;color:var(--b700);margin:12px 0 6px">${h(l)}</h3>`+g[l].map(v=>`<div class="gc"><div class="gw">${h(v.hanzi)}</div><div class="gpy">${h(v.pinyin)}</div><div class="gmn">${h(v.en)}</div></div>`).join('')).join('');return}
 
-    c.innerHTML=`<h2 style="font-size:16px;font-weight:800;margin-bottom:6px">📖 AI Grammar Guide</h2><p style="font-size:11px;color:var(--g400);margin-bottom:14px">Select words per HSK level → Generate</p>${lvls.map(l=>{const cls=hskClass(l);return`
-        <div style="margin-bottom:16px">
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--b700);color:#fff;border-radius:var(--rs) var(--rs) 0 0">
-                <div><b style="font-size:14px">${h(l)}</b><span style="font-size:11px;opacity:.7;margin-left:6px">${g[l].length} words</span></div>
-                <button onclick="togGS('${cls}')" style="font-size:10px;font-weight:600;background:rgba(255,255,255,.2);padding:3px 10px;border-radius:6px;border:none;color:#fff;cursor:pointer" id="gt_${cls}">Select ▼</button>
-            </div>
-            <div id="gs_${cls}" style="display:none;padding:10px;background:#fff;border:1px solid var(--g200);border-top:none">
-                <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-                    <label style="font-size:10px;color:var(--g500);display:flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" checked onchange="document.querySelectorAll('.gw_${cls} input').forEach(c=>c.checked=this.checked)" style="accent-color:var(--b600)">All</label>
-                    <button onclick="genGram('${cls}','${l}')" style="padding:5px 14px;border-radius:6px;border:none;background:var(--b600);color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit" id="gg_${cls}">Generate ✨</button>
+    c.innerHTML=`<h2 style="font-size:16px;font-weight:800;margin-bottom:6px">📖 AI Grammar Guide</h2>
+        <p style="font-size:11px;color:var(--g400);margin-bottom:10px">Search a word or select by HSK level → Generate</p>
+        
+        <!-- Search Bar -->
+        <div style="margin-bottom:14px">
+            <div style="display:flex;gap:6px">
+                <div style="flex:1;display:flex;align-items:center;background:var(--g100);border-radius:10px;padding:0 12px;gap:6px">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--g400)" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <input id="gramSearch" type="text" placeholder="Search Hanzi, Pinyin, English..." oninput="filterGrammar()" style="flex:1;border:none;background:none;padding:10px 0;font-size:13px;font-family:inherit;outline:none">
                 </div>
-                ${g[l].map(v=>`<label class="gw_${cls}" style="display:flex;align-items:center;gap:8px;padding:4px 6px;font-size:12px;cursor:pointer"><input type="checkbox" checked value="${V.indexOf(v)}" style="accent-color:var(--b600)"><span style="font-family:'Noto Sans SC';font-size:16px;font-weight:700">${h(v.hanzi)}</span><span style="color:var(--g500)">${h(v.pinyin)} — ${h(v.en)}</span></label>`).join('')}
+                <button onclick="searchGenGram()" style="padding:8px 14px;border-radius:10px;border:none;background:var(--b600);color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">Generate ✨</button>
             </div>
-            <div id="gc_${cls}" style="margin-top:6px"></div>
-        </div>`}).join('')}`;
+            <div id="gramSearchResults" style="margin-top:8px"></div>
+        </div>
+
+        <!-- Generated from search -->
+        <div id="gramSearchCards" style="margin-bottom:14px"></div>
+
+        <!-- HSK Levels -->
+        <div id="gramHSKLevels">
+        ${lvls.map(l=>{const cls=hskClass(l);return`
+            <div style="margin-bottom:16px">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--b700);color:#fff;border-radius:var(--rs) var(--rs) 0 0">
+                    <div><b style="font-size:14px">${h(l)}</b><span style="font-size:11px;opacity:.7;margin-left:6px">${g[l].length} words</span></div>
+                    <button onclick="togGS('${cls}')" style="font-size:10px;font-weight:600;background:rgba(255,255,255,.2);padding:3px 10px;border-radius:6px;border:none;color:#fff;cursor:pointer" id="gt_${cls}">Select ▼</button>
+                </div>
+                <div id="gs_${cls}" style="display:none;padding:10px;background:#fff;border:1px solid var(--g200);border-top:none">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+                        <label style="font-size:10px;color:var(--g500);display:flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" checked onchange="document.querySelectorAll('.gw_${cls} input').forEach(c=>c.checked=this.checked)" style="accent-color:var(--b600)">All</label>
+                        <button onclick="genGram('${cls}','${l}')" style="padding:5px 14px;border-radius:6px;border:none;background:var(--b600);color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit" id="gg_${cls}">Generate ✨</button>
+                    </div>
+                    ${g[l].map(v=>`<label class="gw_${cls}" style="display:flex;align-items:center;gap:8px;padding:4px 6px;font-size:12px;cursor:pointer"><input type="checkbox" checked value="${V.indexOf(v)}" style="accent-color:var(--b600)"><span style="font-family:'Noto Sans SC';font-size:16px;font-weight:700">${h(v.hanzi)}</span><span style="color:var(--g500)">${h(v.pinyin)} — ${h(v.en)}</span></label>`).join('')}
+                </div>
+                <div id="gc_${cls}" style="margin-top:6px"></div>
+            </div>`}).join('')}
+        </div>`;
+}
+
+// Search filter for grammar
+function filterGrammar(){
+    const q=(document.getElementById('gramSearch').value||'').toLowerCase().trim();
+    const res=document.getElementById('gramSearchResults');
+    if(!q){res.innerHTML='';return}
+    const matches=V.filter(v=>v.hanzi.includes(q)||(v.pinyin||'').toLowerCase().includes(q)||(v.en||'').toLowerCase().includes(q)||(v.id||'').toLowerCase().includes(q)).slice(0,10);
+    if(!matches.length){res.innerHTML='<p style="font-size:12px;color:var(--g400);padding:4px">No matches found</p>';return}
+    res.innerHTML=matches.map(v=>`<label class="gramSearchWord" style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;border:1px solid var(--g200);cursor:pointer;margin-bottom:4px;font-size:12px;background:#fff"><input type="checkbox" checked value="${V.indexOf(v)}" style="accent-color:var(--b600)"><span style="font-family:'Noto Sans SC';font-size:16px;font-weight:700">${h(v.hanzi)}</span><span style="color:var(--g500)">${h(v.pinyin)} — ${h(v.en)}</span><span class="hsk" style="margin-left:auto">${h(v.hsk)}</span></label>`).join('');
+}
+
+// Generate grammar for search results
+async function searchGenGram(){
+    const cbs=document.querySelectorAll('.gramSearchWord input:checked');
+    if(!cbs.length){
+        // If no search results, check if there's text in search to find
+        const q=document.getElementById('gramSearch').value.trim();
+        if(!q)return alert('Type a word to search first');
+        filterGrammar();
+        const cbs2=document.querySelectorAll('.gramSearchWord input:checked');
+        if(!cbs2.length)return alert('No matching words found');
+        return searchGenGram();
+    }
+    const sel=Array.from(cbs).map(c=>V[+c.value]).filter(Boolean);
+    if(!sel.length)return;
+    const out=document.getElementById('gramSearchCards');
+    out.innerHTML='<div style="text-align:center;padding:16px;color:var(--g400)"><div class="dots" style="justify-content:center;padding:0"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div><p style="margin-top:6px;font-size:11px">Generating for '+sel.length+' words...</p></div>';
+    try{
+        const wl=sel.map(v=>`${v.hanzi} (${v.pinyin}) - ${v.en}`).join(', ');
+        const raw=await ai(P_GRAM,'These words: '+wl,4096),data=pj(raw);
+        if(data?.words){
+            out.innerHTML=data.words.map(w=>renderGrammarCard(w)).join('');
+        }else{out.innerHTML='<div class="gc"><div class="gs" style="background:#FEF9C3"><h4>⚠️ Parse Error</h4><p>Try again with fewer words.</p></div></div>';console.log('Raw:',raw)}
+    }catch(e){out.innerHTML=`<div class="gc"><div class="gs" style="background:#FEF2F2"><h4>⚠️ Error</h4><p>${h(e.message)}</p></div></div>`}
+}
+
+function renderGrammarCard(w){
+    return`<div class="gc" style="animation:fadeUp .25s ease"><div class="gw">${h(w.hanzi)}</div><div class="gpy">${h(w.pinyin)}</div><div class="gmn">${h(w.english)}${w.bahasa?' · '+h(w.bahasa):''}</div><span class="vhsk" style="margin-top:6px;display:inline-block">${h(w.hsk)}</span>${w.part_of_speech?` <span class="hsk" style="background:#F0FDF4;color:#166534">${h(w.part_of_speech)}</span>`:''}${w.usage_explanation?`<div class="gs"><h4>📖 Usage</h4><p>${h(w.usage_explanation)}</p></div>`:''}${w.grammar_pattern?`<div class="gs"><h4>📐 Pattern</h4><p style="font-weight:600">${h(w.grammar_pattern)}</p></div>`:''}${w.example_sentences?`<div class="gs"><h4>💬 Examples</h4>${w.example_sentences.map(ex=>`<div class="exs"><div class="xh">${h(ex.hanzi)}</div><div class="xp">${h(ex.pinyin)}</div><div class="xe">🇬🇧 ${h(ex.english)}</div>${ex.bahasa?`<div class="xe">🇮🇩 ${h(ex.bahasa)}</div>`:''}</div>`).join('')}</div>`:''}${w.common_mistakes?`<div class="gs"><h4>⚠️ Common Mistake</h4><p>${h(w.common_mistakes)}</p></div>`:''}${w.pro_tip?`<div class="gs"><h4>🎯 Pro Tip</h4><p>${h(w.pro_tip)}</p></div>`:''}</div>`;
 }
 
 function togGS(cls){
@@ -615,7 +675,7 @@ async function genGram(cls,level){
         const wl=sel.map(v=>`${v.hanzi} (${v.pinyin}) - ${v.en}`).join(', ');
         const raw=await ai(P_GRAM,level+' words: '+wl,4096),data=pj(raw);
         if(data?.words){
-            out.innerHTML=data.words.map(w=>`<div class="gc"><div class="gw">${h(w.hanzi)}</div><div class="gpy">${h(w.pinyin)}</div><div class="gmn">${h(w.english)}${w.bahasa?' · '+h(w.bahasa):''}</div><span class="vhsk" style="margin-top:6px;display:inline-block">${h(w.hsk)}</span>${w.part_of_speech?` <span class="hsk" style="background:#F0FDF4;color:#166534">${h(w.part_of_speech)}</span>`:''}${w.usage_explanation?`<div class="gs"><h4>📖 Usage</h4><p>${h(w.usage_explanation)}</p></div>`:''}${w.grammar_pattern?`<div class="gs"><h4>📐 Pattern</h4><p style="font-weight:600">${h(w.grammar_pattern)}</p></div>`:''}${w.example_sentences?`<div class="gs"><h4>💬 Examples</h4>${w.example_sentences.map(ex=>`<div class="exs"><div class="xh">${h(ex.hanzi)}</div><div class="xp">${h(ex.pinyin)}</div><div class="xe">🇬🇧 ${h(ex.english)}</div>${ex.bahasa?`<div class="xe">🇮🇩 ${h(ex.bahasa)}</div>`:''}</div>`).join('')}</div>`:''}${w.common_mistakes?`<div class="gs"><h4>⚠️ Common Mistake</h4><p>${h(w.common_mistakes)}</p></div>`:''}${w.pro_tip?`<div class="gs"><h4>🎯 Pro Tip</h4><p>${h(w.pro_tip)}</p></div>`:''}</div>`).join('');
+            out.innerHTML=data.words.map(w=>renderGrammarCard(w)).join('');
         }else{out.innerHTML='<div class="gc"><div class="gs" style="background:#FEF9C3"><h4>⚠️ Parse Error</h4><p>Couldn\'t parse AI response. Check console. Try fewer words.</p></div></div>';console.log('Raw:',raw)}
     }catch(e){out.innerHTML=`<div class="gc"><div class="gs" style="background:#FEF2F2"><h4>⚠️ Error</h4><p>${h(e.message)}</p></div></div>`}
     btn.disabled=false;btn.textContent='Generate ✨';
