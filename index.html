@@ -1,28 +1,40 @@
 // api/translate.js (or whatever your BarrierLess endpoint is named)
-
-export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
-
-  try {
-    const { userInput } = req.body; // The text sent from your frontend
-    const apiKey = process.env.GEMINI_API_KEY;
+<script>
+  // This is standard frontend JavaScript that browsers understand!
+  async function askGemini(userInput) {
+    // Paste your actual Gemini API key right here
+    const apiKey = "PASTE_YOUR_GEMINI_KEY_HERE"; 
     
-    // Use flash-lite for fast text tasks
+    // We are using gemini-2.5-flash-lite for maximum speed
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
 
-    // Gemini payload structure
-    const payload = {
-      contents: [{
-        role: "user",
-        parts: [{ text: userInput }]
-      }]
-    };
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          contents: [{
+            role: "user",
+            parts: [{ text: userInput }]
+          }]
+        })
+      });
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
+      const data = await response.json();
+      
+      // This extracts the translation text from Gemini's response
+      const translationResult = data.candidates[0].content.parts[0].text;
+      
+      console.log(translationResult);
+      // 👉 You will need to add your UI update logic here to display 'translationResult' on screen!
+
+    } catch (error) {
+      console.error("Error fetching from Gemini API:", error);
+    }
+  }
+</script>
 
     const data = await response.json();
     
