@@ -411,7 +411,7 @@ async function ai(sys,msg){
     if(!K)throw new Error('NO_KEY');
     
     // Using Gemini 2.5 Flash-Lite for speed
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${K}`;
+const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${K}`;
     
     const payload = {
       systemInstruction: {
