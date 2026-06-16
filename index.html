@@ -1,29 +1,38 @@
-// Change your old Claude fetch function to this:
-async function askGemini(userInput) {
-  // If you hardcode it for personal use, put it here. 
-  // Better yet, pull it from a prompt or localStorage if you want to keep it hidden!
-  const apiKey = "YOUR_GEMINI_API_KEY"; 
-  
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
+// api/translate.js (or whatever your BarrierLess endpoint is named)
 
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
+export default async function handler(req, res) {
+  if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
+
+  try {
+    const { userInput } = req.body; // The text sent from your frontend
+    const apiKey = process.env.GEMINI_API_KEY;
+    
+    // Use flash-lite for fast text tasks
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
+
+    // Gemini payload structure
+    const payload = {
       contents: [{
         role: "user",
         parts: [{ text: userInput }]
       }]
-    })
-  });
+    };
 
-  const data = await response.json();
-  
-  // This extracts the text answer from Gemini's response structure
-  const translationResult = data.candidates[0].content.parts[0].text;
-  
-  // Now pass 'translationResult' into your existing UI update code!
-  console.log(translationResult); 
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await response.json();
+    
+    // Extracting the text from Gemini's response object
+    const aiText = data.candidates[0].content.parts[0].text;
+    
+    res.status(200).json({ reply: aiText });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to process request' });
+  }
 }
